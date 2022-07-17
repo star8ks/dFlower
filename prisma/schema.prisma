@@ -1,0 +1,35 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgres"
+  url      = env("DATABASE_URL")
+}
+
+model Room {
+  id             String           @id @default(cuid())
+  name           String
+  GiftersOnRooms GiftersOnRooms[]
+}
+
+model Gifter {
+  id             BigInt           @id @default(autoincrement()) @db.BigInt
+  name           String
+  eth_addr       String
+  GiftersOnRooms GiftersOnRooms[]
+}
+
+model GiftersOnRooms {
+  room      Room     @relation(fields: [roomId], references: [id])
+  roomId    String
+  gifter    Gifter   @relation(fields: [giftId], references: [id])
+  giftId    BigInt   @db.BigInt
+  enteredAt DateTime @default(now())
+  accept    Boolean  @default(true)
+
+  @@id([roomId, giftId])
+}
