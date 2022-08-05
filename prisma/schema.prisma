@@ -16,6 +16,11 @@ model Room {
   giftersOnRooms GiftersOnRooms[]
   points         Point[]
   results        Result[]
+  createdAt      DateTime         @default(now())
+  startedAt      DateTime         @default(now())
+  endedAt        DateTime
+  creator        Gifter           @relation(fields: [gifterId], references: [id])
+  gifterId       BigInt
 }
 
 model Result {
@@ -36,6 +41,7 @@ model Gifter {
   sentPoint      Point[]          @relation(name: "sender")
   receivedPoint  Point[]          @relation(name: "receiver")
   Result         Result[]
+  Room           Room[]
 }
 
 model GiftersOnRooms {
@@ -50,13 +56,14 @@ model GiftersOnRooms {
 }
 
 model Point {
-  room       Room   @relation(fields: [roomId], references: [id])
+  room       Room     @relation(fields: [roomId], references: [id])
   roomId     String
-  sender     Gifter @relation(name: "sender", fields: [senderId], references: [id])
+  sender     Gifter   @relation(name: "sender", fields: [senderId], references: [id])
   senderId   BigInt
-  receiver   Gifter @relation(name: "receiver", fields: [receiverId], references: [id])
+  receiver   Gifter   @relation(name: "receiver", fields: [receiverId], references: [id])
   receiverId BigInt
   point      Int
+  createdAt  DateTime @default(now())
 
   @@id([roomId, senderId, receiverId])
 }

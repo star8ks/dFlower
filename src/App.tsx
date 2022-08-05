@@ -1,35 +1,46 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { useState } from 'react'
-import reactLogo from './assets/react.svg'
 import './App.css'
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [btnColor, setBtnColor] = useState('rgb(207, 20, 114)')
+  const [hover, setHover] = useState(false)
+
+  useEffect(() => {
+    if (!hover) return
+    const intervalID = setInterval(() => setBtnColor(randomColor()), 100)
+    return () => clearInterval(intervalID)
+  }, [hover])
+
+  const lang = navigator.languages && navigator.languages.length
+    ? navigator.languages[0]
+    : navigator.language
+  const siteName = lang === 'zh-CN' ? (
+    <div>送你一朵<strong className="sitename">小红花</strong></div>
+  ) : 'GimeGandy'
 
   return (
     <div className="App">
       <div>
-        <a href="https://vitejs.dev" target="_blank" rel="noreferrer">
-          <img src="/vite.svg" className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://reactjs.org" target="_blank" rel="noreferrer">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
       </div>
-      <h1>Vite + React</h1>
+      <h1>{siteName}</h1>
       <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
+        <button onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}
+          style={{ color: btnColor }}>
+          开始
         </button>
         <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
+          点击开始，把小红花送给朋友们吧
         </p>
       </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
     </div>
   )
+
+  function randomColor() {
+    const colors = ['rgb(207, 20, 114)', '#333']
+    const rnd = Math.floor(Math.random() * colors.length)
+    return colors[rnd]
+  }
 }
 
 export default App
