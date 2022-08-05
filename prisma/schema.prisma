@@ -13,23 +13,50 @@ datasource db {
 model Room {
   id             String           @id @default(cuid())
   name           String
-  GiftersOnRooms GiftersOnRooms[]
+  giftersOnRooms GiftersOnRooms[]
+  points         Point[]
+  results        Result[]
+}
+
+model Result {
+  room     Room    @relation(fields: [roomId], references: [id])
+  roomId   String
+  gifter   Gifter  @relation(fields: [gifterId], references: [id])
+  gifterId BigInt
+  percent  Decimal
+
+  @@id([roomId, gifterId])
 }
 
 model Gifter {
-  id             BigInt           @id @default(autoincrement()) @db.BigInt
+  id             BigInt           @id @default(autoincrement())
   name           String
-  eth_addr       String
-  GiftersOnRooms GiftersOnRooms[]
+  eth_addr       String           @unique
+  giftersOnRooms GiftersOnRooms[]
+  sentPoint      Point[]          @relation(name: "sender")
+  receivedPoint  Point[]          @relation(name: "receiver")
+  Result         Result[]
 }
 
 model GiftersOnRooms {
   room      Room     @relation(fields: [roomId], references: [id])
   roomId    String
-  gifter    Gifter   @relation(fields: [giftId], references: [id])
-  giftId    BigInt   @db.BigInt
+  gifter    Gifter   @relation(fields: [gifterId], references: [id])
+  gifterId  BigInt
   enteredAt DateTime @default(now())
   accept    Boolean  @default(true)
 
-  @@id([roomId, giftId])
+  @@id([roomId, gifterId])
+}
+
+model Point {
+  room       Room   @relation(fields: [roomId], references: [id])
+  roomId     String
+  sender     Gifter @relation(name: "sender", fields: [senderId], references: [id])
+  senderId   BigInt
+  receiver   Gifter @relation(name: "receiver", fields: [receiverId], references: [id])
+  receiverId BigInt
+  point      Int
+
+  @@id([roomId, senderId, receiverId])
 }
