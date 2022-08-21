@@ -34,9 +34,6 @@ client.on('ready', () => {
 const users: User[] = []
 
 client.on('interactionCreate', async (interaction) => {
-  if (interaction.type === InteractionType.ModalSubmit) {
-    return modalSubmitHandler(interaction)
-  }
 
   if (interaction.isChatInputCommand()) {
     if (interaction.commandName === dflowerCommand.name) {
@@ -47,6 +44,14 @@ client.on('interactionCreate', async (interaction) => {
   if (interaction.isButton()) {
     return buttonHandler(interaction, users)
   }
+
+  if (interaction.type === InteractionType.ModalSubmit) {
+    return modalSubmitHandler(interaction)
+  }
+})
+
+client.on('error', error => {
+  console.error('client error', error.message)
 })
 
 
