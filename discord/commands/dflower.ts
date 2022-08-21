@@ -94,6 +94,17 @@ export const commandHandler = async function(interaction, users, client) {
     return
   }
 
+  if (users.length > 5) {
+    await interaction.reply({
+      ephemeral: true,
+      embeds: [new EmbedBuilder({
+        title: '发起失败',
+        description: '暂不支持超过5人的互评'
+      })],
+    })
+    return
+  }
+
   const actionRowComponent = new ActionRowBuilder<ButtonBuilder>().setComponents(
     new ButtonBuilder().setCustomId('cancel').setLabel('取消').setStyle(ButtonStyle.Danger),
     new ButtonBuilder().setCustomId('confirm').setLabel('确定').setStyle(ButtonStyle.Primary)
