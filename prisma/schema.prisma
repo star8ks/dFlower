@@ -36,7 +36,8 @@ model Result {
 model Gifter {
   id             BigInt           @id @default(autoincrement())
   name           String
-  eth_addr       String           @unique
+  ethAddress     String?          @unique
+  discordId      String           @unique
   giftersOnRooms GiftersOnRooms[]
   sentPoint      Point[]          @relation(name: "sender")
   receivedPoint  Point[]          @relation(name: "receiver")
