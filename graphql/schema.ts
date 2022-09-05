@@ -1,8 +1,9 @@
 import { makeSchema } from 'nexus'
 import { join } from 'path'
+import * as types from './types'
 
-const typeDefs = makeSchema({
-  types: [],
+const schema = makeSchema({
+  types,
   outputs: {
     typegen: join(
       process.cwd(),
@@ -19,4 +20,4 @@ const typeDefs = makeSchema({
   }
 })
 
-export default typeDefs
+export default schema

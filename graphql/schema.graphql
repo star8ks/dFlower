@@ -2,6 +2,39 @@
 ### Do not make changes to this file directly
 
 
+input CreateGifterInput {
+  discordId: String!
+  ethAddress: String
+  name: String!
+}
+
+input CreateRoomFromDiscord {
+  discordId: String!
+  discordName: String!
+  gifters: [CreateGifterInput!]!
+  name: String
+}
+
+type Gifter {
+  discordId: String!
+  ethAddress: String
+  id: Int!
+  name: String!
+  rooms: [Room]
+}
+
+type Mutation {
+  createRoomFromDiscord(data: CreateRoomFromDiscord!): Room!
+}
+
 type Query {
-  ok: Boolean!
+  rooms: [Room]!
+}
+
+type Room {
+  creator: Gifter
+  endedAt: String!
+  id: String!
+  name: String!
+  startedAt: String!
 }

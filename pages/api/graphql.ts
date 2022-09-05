@@ -1,6 +1,6 @@
 import { ApolloServer } from 'apollo-server-micro'
 import resolvers from '../../graphql/resolvers'
-import typeDefs from '../../graphql/typeDefs'
+import schema from '../../graphql/schema'
 import Cors from 'micro-cors'
 import { createContext } from '../../graphql/context'
 import {
@@ -10,7 +10,7 @@ import {
 const cors = Cors()
 
 const apolloServer = new ApolloServer({
-  typeDefs, resolvers,
+  schema,
 
   plugins: [
     ApolloServerPluginLandingPageGraphQLPlayground(),
@@ -23,7 +23,7 @@ const startServer = apolloServer.start()
 
 export default cors(async function handler(req, res) {
 
-  res.setHeader('Access-Control-Allow-Credentials', 'false')
+  res.setHeader('Access-Control-Allow-Credentials', 'true')
   res.setHeader(
     'Access-Control-Allow-Origin',
     '*'
