@@ -10,6 +10,26 @@ export const Point = objectType({
     t.nonNull.int('receiverId')
     t.nonNull.int('point')
     t.nonNull.string('createdAt')
+    t.nonNull.field('sender', {
+      type: Gifter,
+      async resolve(parent, args, ctx) {
+        return await ctx.prisma.gifter.findUniqueOrThrow({
+          where: {
+            id: parent.senderId
+          }
+        })
+      }
+    })
+    t.nonNull.field('receiver', {
+      type: Gifter,
+      async resolve(parent, args, ctx) {
+        return await ctx.prisma.gifter.findUniqueOrThrow({
+          where: {
+            id: parent.receiverId
+          }
+        })
+      }
+    })
   }
 })
 

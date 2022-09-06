@@ -31,8 +31,10 @@ type Mutation {
 type Point {
   createdAt: String!
   point: Int!
+  receiver: Gifter!
   receiverId: Int!
   roomId: String!
+  sender: Gifter!
   senderId: Int!
 }
 
