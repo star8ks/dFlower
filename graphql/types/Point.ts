@@ -32,7 +32,7 @@ export const PointQuery = extendType({
       },
       resolve(_parent, args, ctx) {
         const { roomId, senderId, receiverId } = args.data
-        const where: { roomId: string; senderId?: bigint; receiverId?: bigint } = { roomId: roomId }
+        const where: { roomId: string; senderId?: number; receiverId?: number } = { roomId: roomId }
         if (senderId) where.senderId = senderId
         if (receiverId) where.receiverId = receiverId
         return ctx.prisma.point.findMany({

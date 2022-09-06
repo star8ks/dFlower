@@ -12,7 +12,7 @@ export const Room = objectType({
     t.field('creator', {
       type: Gifter,
       async resolve(parent, args, ctx) {
-        return await ctx.prisma.room.findUnique({
+        return await ctx.prisma.room.findUniqueOrThrow({
           where: {
             id: parent.id
           }
@@ -45,7 +45,7 @@ export const RoomByIdQuery = extendType({
         id: nonNull(stringArg())
       },
       resolve(_parent, args, ctx) {
-        return ctx.prisma.room.findUnique({ where: { id: args.id } })
+        return ctx.prisma.room.findUniqueOrThrow({ where: { id: args.id } })
       }
     })
   },

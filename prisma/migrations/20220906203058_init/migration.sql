@@ -5,7 +5,7 @@ CREATE TABLE "Room" (
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "startedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "endedAt" TIMESTAMP(3) NOT NULL,
-    "gifterId" BIGINT NOT NULL,
+    "gifterId" INTEGER NOT NULL,
 
     CONSTRAINT "Room_pkey" PRIMARY KEY ("id")
 );
@@ -13,7 +13,7 @@ CREATE TABLE "Room" (
 -- CreateTable
 CREATE TABLE "Result" (
     "roomId" TEXT NOT NULL,
-    "gifterId" BIGINT NOT NULL,
+    "gifterId" INTEGER NOT NULL,
     "percent" DECIMAL(65,30) NOT NULL,
 
     CONSTRAINT "Result_pkey" PRIMARY KEY ("roomId","gifterId")
@@ -21,9 +21,10 @@ CREATE TABLE "Result" (
 
 -- CreateTable
 CREATE TABLE "Gifter" (
-    "id" BIGSERIAL NOT NULL,
+    "id" SERIAL NOT NULL,
     "name" TEXT NOT NULL,
-    "eth_addr" TEXT NOT NULL,
+    "ethAddress" TEXT,
+    "discordId" TEXT NOT NULL,
 
     CONSTRAINT "Gifter_pkey" PRIMARY KEY ("id")
 );
@@ -31,7 +32,7 @@ CREATE TABLE "Gifter" (
 -- CreateTable
 CREATE TABLE "GiftersOnRooms" (
     "roomId" TEXT NOT NULL,
-    "gifterId" BIGINT NOT NULL,
+    "gifterId" INTEGER NOT NULL,
     "enteredAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "accept" BOOLEAN NOT NULL DEFAULT true,
 
@@ -41,8 +42,8 @@ CREATE TABLE "GiftersOnRooms" (
 -- CreateTable
 CREATE TABLE "Point" (
     "roomId" TEXT NOT NULL,
-    "senderId" BIGINT NOT NULL,
-    "receiverId" BIGINT NOT NULL,
+    "senderId" INTEGER NOT NULL,
+    "receiverId" INTEGER NOT NULL,
     "point" INTEGER NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
@@ -50,7 +51,10 @@ CREATE TABLE "Point" (
 );
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Gifter_eth_addr_key" ON "Gifter"("eth_addr");
+CREATE UNIQUE INDEX "Gifter_ethAddress_key" ON "Gifter"("ethAddress");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Gifter_discordId_key" ON "Gifter"("discordId");
 
 -- AddForeignKey
 ALTER TABLE "Room" ADD CONSTRAINT "Room_gifterId_fkey" FOREIGN KEY ("gifterId") REFERENCES "Gifter"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

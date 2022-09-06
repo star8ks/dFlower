@@ -10,7 +10,7 @@ export const Gifter = objectType({
     t.string('ethAddress')
     t.list.field('rooms', {
       type: Room,
-      async resolve(parent, args, ctx) {
+      async resolve(parent, _args, ctx) {
         // TODO return recent 10 rooms
         return await ctx.prisma.gifter.findUnique({
           where: {
