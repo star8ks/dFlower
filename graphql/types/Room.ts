@@ -1,5 +1,16 @@
 import { extendType, inputObjectType, nonNull, objectType, stringArg } from 'nexus'
 import { Gifter, CreateGifterInput } from './Gifter'
+import { Point } from './Point'
+
+export const GifterOnRoom = objectType({
+  name: 'GifterOnRoom',
+  definition(t) {
+    t.nonNull.boolean('accept')
+    t.nonNull.field('gifter', {
+      type: 'Gifter'
+    })
+  }
+})
 
 export const Room = objectType({
   name: 'Room',
@@ -20,15 +31,38 @@ export const Room = objectType({
       }
     })
     t.nonNull.list.field('gifters', {
-      type: Gifter,
+      type: 'GifterOnRoom',
       async resolve(parent, args, ctx) {
-        return await ctx.prisma.gifter.findMany({
+        const gifterIds = await ctx.prisma.giftersOnRooms.findMany({
           where: {
-            rooms: {
-              some: {
-                room: { id: parent.id }
-              }
+            roomId: parent.id
+          },
+          select: {
+            gifterId: true,
+            accept: true
+          }
+        })
+
+        return await Promise.all(gifterIds.map(async gifterOnRoom => {
+          const gifter = await ctx.prisma.gifter.findUniqueOrThrow({
+            where: {
+              id: gifterOnRoom.gifterId
             }
+          })
+          return {
+            accept: gifterOnRoom.accept,
+            gifter
+          }
+        }))
+
+      }
+    })
+    t.list.field('points', {
+      type: Point,
+      async resolve(parent, _args, ctx) {
+        return await ctx.prisma.point.findMany({
+          where: {
+            roomId: parent.id
           }
         })
       }

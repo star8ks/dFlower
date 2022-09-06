@@ -23,6 +23,11 @@ type Gifter {
   rooms: [Room]
 }
 
+type GifterOnRoom {
+  accept: Boolean!
+  gifter: Gifter!
+}
+
 type Mutation {
   createRoomFromDiscord(data: CreateRoomFromDiscord!): Room!
   updatePoint(data: UpdatePointInput!): Point!
@@ -54,9 +59,10 @@ type Room {
   createdAt: String!
   creator: Gifter
   endedAt: String!
-  gifters: [Gifter]!
+  gifters: [GifterOnRoom]!
   id: String!
   name: String!
+  points: [Point]
   startedAt: String!
 }
 
