@@ -11,16 +11,16 @@ datasource db {
 }
 
 model Room {
-  id             String           @id @default(cuid())
-  name           String
-  giftersOnRooms GiftersOnRooms[]
-  points         Point[]
-  results        Result[]
-  createdAt      DateTime         @default(now())
-  startedAt      DateTime         @default(now())
-  endedAt        DateTime
-  creator        Gifter           @relation(fields: [gifterId], references: [id])
-  gifterId       BigInt
+  id        String           @id @default(cuid())
+  name      String
+  gifters   GiftersOnRooms[]
+  points    Point[]
+  results   Result[]
+  createdAt DateTime         @default(now())
+  startedAt DateTime         @default(now())
+  endedAt   DateTime
+  creator   Gifter           @relation(fields: [gifterId], references: [id])
+  gifterId  BigInt
 }
 
 model Result {
@@ -34,15 +34,15 @@ model Result {
 }
 
 model Gifter {
-  id             BigInt           @id @default(autoincrement())
-  name           String
-  ethAddress     String?          @unique
-  discordId      String           @unique
-  giftersOnRooms GiftersOnRooms[]
-  sentPoint      Point[]          @relation(name: "sender")
-  receivedPoint  Point[]          @relation(name: "receiver")
-  Result         Result[]
-  Room           Room[]
+  id            BigInt           @id @default(autoincrement())
+  name          String
+  ethAddress    String?          @unique
+  discordId     String           @unique
+  rooms         GiftersOnRooms[]
+  sentPoint     Point[]          @relation(name: "sender")
+  receivedPoint Point[]          @relation(name: "receiver")
+  Result        Result[]
+  Room          Room[]
 }
 
 model GiftersOnRooms {
