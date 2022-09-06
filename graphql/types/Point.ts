@@ -81,8 +81,23 @@ export const UpdatePointMutation = extendType({
       args: {
         data: nonNull(UpdatePointInput)
       },
-      resolve(_parent, args, ctx) {
+      async resolve(_parent, args, ctx) {
         const { roomId, senderId, receiverId, point } = args.data
+
+        const allowedGifter = await ctx.prisma.giftersOnRooms.findMany({
+          where: {
+            roomId,
+          },
+          select: {
+            gifterId: true,
+          }
+        })
+        const allowedGifterIds = allowedGifter.map(gifter => gifter.gifterId)
+
+        if (!allowedGifterIds.includes(senderId) || !allowedGifterIds.includes(receiverId)) {
+          throw new Error('Sender or receiver are not in room.')
+        }
+
         return ctx.prisma.point.upsert({
           where: {
             roomId_senderId_receiverId: {
