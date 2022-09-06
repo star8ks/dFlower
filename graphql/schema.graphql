@@ -25,16 +25,42 @@ type Gifter {
 
 type Mutation {
   createRoomFromDiscord(data: CreateRoomFromDiscord!): Room!
+  updatePoint(data: UpdatePointInput!): Point!
+}
+
+type Point {
+  createdAt: String!
+  point: Int!
+  receiverId: Int!
+  roomId: String!
+  senderId: Int!
 }
 
 type Query {
+  point(data: QueryPointInput!): [Point]!
+  roomById(id: String!): Room!
   rooms: [Room]!
 }
 
+input QueryPointInput {
+  receiverId: Int
+  roomId: String!
+  senderId: Int
+}
+
 type Room {
+  createdAt: String!
   creator: Gifter
   endedAt: String!
+  gifters: [Gifter]!
   id: String!
   name: String!
   startedAt: String!
+}
+
+input UpdatePointInput {
+  point: Int!
+  receiverId: Int!
+  roomId: String!
+  senderId: Int!
 }

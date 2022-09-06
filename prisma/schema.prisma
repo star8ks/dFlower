@@ -20,21 +20,21 @@ model Room {
   startedAt DateTime         @default(now())
   endedAt   DateTime
   creator   Gifter           @relation(fields: [gifterId], references: [id])
-  gifterId  BigInt
+  gifterId  Int
 }
 
 model Result {
   room     Room    @relation(fields: [roomId], references: [id])
   roomId   String
   gifter   Gifter  @relation(fields: [gifterId], references: [id])
-  gifterId BigInt
+  gifterId Int
   percent  Decimal
 
   @@id([roomId, gifterId])
 }
 
 model Gifter {
-  id            BigInt           @id @default(autoincrement())
+  id            Int              @id @default(autoincrement())
   name          String
   ethAddress    String?          @unique
   discordId     String           @unique
@@ -42,14 +42,14 @@ model Gifter {
   sentPoint     Point[]          @relation(name: "sender")
   receivedPoint Point[]          @relation(name: "receiver")
   Result        Result[]
-  Room          Room[]
+  createdRoom   Room[]
 }
 
 model GiftersOnRooms {
   room      Room     @relation(fields: [roomId], references: [id])
   roomId    String
   gifter    Gifter   @relation(fields: [gifterId], references: [id])
-  gifterId  BigInt
+  gifterId  Int
   enteredAt DateTime @default(now())
   accept    Boolean  @default(true)
 
@@ -60,9 +60,9 @@ model Point {
   room       Room     @relation(fields: [roomId], references: [id])
   roomId     String
   sender     Gifter   @relation(name: "sender", fields: [senderId], references: [id])
-  senderId   BigInt
+  senderId   Int
   receiver   Gifter   @relation(name: "receiver", fields: [receiverId], references: [id])
-  receiverId BigInt
+  receiverId Int
   point      Int
   createdAt  DateTime @default(now())
 

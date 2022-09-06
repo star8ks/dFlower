@@ -1,4 +1,4 @@
-import { extendType, inputObjectType, nonNull, nullable, objectType, stringArg } from 'nexus'
+import { extendType, inputObjectType, nonNull, objectType, stringArg } from 'nexus'
 import { Gifter, CreateGifterInput } from './Gifter'
 
 export const Room = objectType({
@@ -6,7 +6,7 @@ export const Room = objectType({
   definition(t) {
     t.nonNull.string('id')
     t.nonNull.string('name')
-    // t.nonNull.string('createdAt')
+    t.nonNull.string('createdAt')
     t.nonNull.string('startedAt')
     t.nonNull.string('endedAt')
     t.field('creator', {
@@ -19,15 +19,45 @@ export const Room = objectType({
         }).creator()
       }
     })
+    t.nonNull.list.field('gifters', {
+      type: Gifter,
+      async resolve(parent, args, ctx) {
+        return await ctx.prisma.gifter.findMany({
+          where: {
+            rooms: {
+              some: {
+                room: { id: parent.id }
+              }
+            }
+          }
+        })
+      }
+    })
   }
 })
 
-export const RoomQuery = extendType({
+export const RoomByIdQuery = extendType({
+  type: 'Query',
+  definition(t) {
+    t.nonNull.field('roomById', {
+      type: Room,
+      args: {
+        id: nonNull(stringArg())
+      },
+      resolve(_parent, args, ctx) {
+        return ctx.prisma.room.findUnique({ where: { id: args.id } })
+      }
+    })
+  },
+})
+
+export const RoomsQuery = extendType({
   type: 'Query',
   definition(t) {
     t.nonNull.list.field('rooms', {
       type: Room,
       resolve(_parent, _args, ctx) {
+        // TODO pagination
         return ctx.prisma.room.findMany()
       }
     })
@@ -83,6 +113,7 @@ export const CreateRoomFromDiscordMutation = extendType({
         const room = await ctx.prisma.room.create({
           data: {
             name: roomName || `room created by ${discordName}`,
+            createdAt: new Date(Date.now()),
             // ended at 2 hours later by default
             endedAt: new Date(Date.now() + 2 * 60 * 60 * 1000),
             creator: {
@@ -95,7 +126,7 @@ export const CreateRoomFromDiscordMutation = extendType({
                 }
               }
             },
-            giftersOnRooms: {
+            gifters: {
               createMany: {
                 data: gifterIds
               }

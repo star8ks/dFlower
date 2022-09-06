@@ -1,7 +1,6 @@
 import { inputObjectType, objectType } from 'nexus'
 import { Room } from './Room'
 
-
 export const Gifter = objectType({
   name: 'Gifter',
   definition(t) {
@@ -17,7 +16,7 @@ export const Gifter = objectType({
           where: {
             id: parent.id
           }
-        }).Room()
+        }).rooms()
       }
     })
   }
