@@ -1,4 +1,5 @@
 import { extendType, inputObjectType, nonNull, objectType, stringArg } from 'nexus'
+import calc from '../../lib/calc'
 import { Gifter, CreateGifterInput } from './Gifter'
 import { Point } from './Point'
 
@@ -20,6 +21,7 @@ export const Room = objectType({
     t.nonNull.string('createdAt')
     t.nonNull.string('startedAt')
     t.nonNull.string('endedAt')
+
     t.field('creator', {
       type: Gifter,
       async resolve(parent, args, ctx) {
@@ -30,6 +32,7 @@ export const Room = objectType({
         }).creator()
       }
     })
+
     t.nonNull.list.field('gifters', {
       type: 'GifterOnRoom',
       async resolve(parent, args, ctx) {
@@ -57,14 +60,57 @@ export const Room = objectType({
 
       }
     })
+
     t.list.field('points', {
-      type: Point,
+      type: 'Point',
       async resolve(parent, _args, ctx) {
         return await ctx.prisma.point.findMany({
           where: {
             roomId: parent.id
           }
         })
+      }
+    })
+
+    t.field('tempResult', {
+      type: 'CalcResult',
+      async resolve(parent, _args, ctx) {
+        const points = await ctx.prisma.point.findMany({
+          where: {
+            roomId: parent.id
+          },
+          include: {
+            sender: {
+              select: {
+                name: true,
+              }
+            },
+            receiver: {
+              select: {
+                name: true,
+              }
+            }
+          }
+        })
+        const gifterOnRoom = (await ctx.prisma.giftersOnRooms.findMany({
+          where: {
+            roomId: parent.id
+          },
+          include: {
+            gifter: {
+              select: {
+                name: true,
+              }
+            },
+          }
+        })).map(g => ({
+          gifterId: g.gifterId,
+          gifterName: g.gifter.name,
+          accept: g.accept
+        }))
+
+        console.log(calc(gifterOnRoom, points))
+        return calc(gifterOnRoom, points)
       }
     })
   }
@@ -74,7 +120,7 @@ export const RoomByIdQuery = extendType({
   type: 'Query',
   definition(t) {
     t.nonNull.field('roomById', {
-      type: Room,
+      type: 'Room',
       args: {
         id: nonNull(stringArg())
       },
