@@ -1,3 +1,4 @@
+import '../styles/App.css'
 import Layout from '../components/Layout'
 import Snd from 'snd-lib'
 import React from 'react'

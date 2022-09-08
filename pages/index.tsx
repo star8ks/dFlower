@@ -1,10 +1,22 @@
+
 import React, { useEffect, useState } from 'react'
-// import './App.css'
+import { gql, useQuery } from '@apollo/client'
+
+const AllRoomsQuery = gql`
+  query AllRoomsQuery {
+    rooms {
+      id
+      name
+      endedAt
+    }
+  }
+`
 
 function Index() {
   const [btnColor, setBtnColor] = useState('rgb(207, 20, 114)')
   const [hover, setHover] = useState(false)
   const [siteName, setSiteName] = useState<string | JSX.Element>('dFlower')
+  const { data, error, loading } = useQuery(AllRoomsQuery)
 
   useEffect(() => {
     if (!hover) return
@@ -22,13 +34,13 @@ function Index() {
         <div>送你一朵<strong className="sitename">小红花</strong></div>
       ) : 'dFlower')
     }
-  })
+  }, [])
 
+  if (loading) return <p> Loading...</p>
+  if (error) return <p> Oops, somthing went wrong. {error.message}</p>
 
   return (
     <div className="App">
-      <div>
-      </div>
       <h1>{siteName}</h1>
       <div className="card">
         <button onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}
@@ -38,6 +50,9 @@ function Index() {
         <p>
           点击开始，把小红花送给朋友们吧
         </p>
+        {data?.rooms.map(room => (
+          <li key={room.id}>{room.id}</li>
+        ))}
       </div>
     </div>
   )
