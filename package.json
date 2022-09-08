@@ -10,6 +10,7 @@
     "api": "ts-node api.ts"
   },
   "dependencies": {
+    "@apollo/client": "^3.6.9",
     "@prisma/client": "^4.0.0",
     "apollo-server-micro": "^3.10.2",
     "graphql-tools": "^8.3.4",
