@@ -30,7 +30,22 @@ type InputPoint = Point & {
 }
 
 
-export function normalize(gifterOnRoom: InputGifter[], points: InputPoint[]) {
+type normalizeCallback = (point: InputPoint, percent: number) => void
+
+export function normalizedBySender(sentPoints: InputPoint[], sentSum: number, cb: normalizeCallback) {
+  for (const point of sentPoints) {
+    const percent = point.point / sentSum
+
+    cb(point, percent)
+  }
+}
+
+type Normalized = {
+  percentReceived: ReceiverIdToPercentResults;
+  percentTotal: number;
+  allGifted: Gifted[]
+}
+export function normalize(gifterOnRoom: InputGifter[], points: InputPoint[]): Normalized {
   const rejectorIds = gifterOnRoom.filter((gor) => !gor.accept).map((gor) => gor.gifterId)
 
   const allGifted: Gifted[] = []
@@ -45,16 +60,14 @@ export function normalize(gifterOnRoom: InputGifter[], points: InputPoint[]) {
       normalized: []
     }
 
-    const sentPoints = points.filter(point =>
-      point.senderId === sender.gifterId && !rejectorIds.includes(point.receiverId)
+    const sentPoints = points.filter(point => point.senderId === sender.gifterId && !rejectorIds.includes(point.receiverId)
     )
     const sentSum = sentPoints.reduce((acc, cur) => acc + cur.point, 0)
 
     // let percentPoints
     if (sentSum > 0) {
-      for (const point of sentPoints) {
-        percent = point.point / sentSum
-
+      normalizedBySender(sentPoints, sentSum, (point, percent) => {
+        percentTotal += percent ? percent : 0
         if (percentReceived[point.receiverId] === undefined) {
           percentReceived[point.receiverId] = {
             receiverName: point.receiver.name,
@@ -74,7 +87,8 @@ export function normalize(gifterOnRoom: InputGifter[], points: InputPoint[]) {
           receiverName: point.receiver.name,
           percent
         })
-      }
+      })
+
     } else {
       // sender gifted nothing to others, assume he/she gifted same point to each receiver
       for (const receiver of gifterOnRoom) {
@@ -84,6 +98,7 @@ export function normalize(gifterOnRoom: InputGifter[], points: InputPoint[]) {
 
         if (receiver.gifterId !== sender.gifterId) {
           percent = 1 / (gifterOnRoom.length - 1)
+          percentTotal += percent ? percent : 0
 
           if (percentReceived[receiver.gifterId] === undefined) {
             percentReceived[receiver.gifterId] = {
@@ -109,7 +124,6 @@ export function normalize(gifterOnRoom: InputGifter[], points: InputPoint[]) {
     }
 
     allGifted.push(gifted)
-    percentTotal += percent ? percent : 0
   }
 
   return {
@@ -117,6 +131,7 @@ export function normalize(gifterOnRoom: InputGifter[], points: InputPoint[]) {
     percentTotal,
     allGifted
   }
+
 }
 
 export default function calc(gifterOnRoom: InputGifter[], points: InputPoint[]): CalcResult {

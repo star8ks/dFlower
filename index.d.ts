@@ -131,6 +131,7 @@ export interface NexusGenFieldTypes {
   Mutation: { // field return type
     createRoomFromDiscord: NexusGenRootTypes['Room']; // Room!
     updatePoint: NexusGenRootTypes['Point']; // Point!
+    updatePointBatch: NexusGenRootTypes['GiftedResult']; // GiftedResult!
   }
   PercentResult: { // field return type
     percent: number; // Float!
@@ -193,6 +194,7 @@ export interface NexusGenFieldTypeNames {
   Mutation: { // field return type name
     createRoomFromDiscord: 'Room'
     updatePoint: 'Point'
+    updatePointBatch: 'GiftedResult'
   }
   PercentResult: { // field return type name
     percent: 'Float'
@@ -238,6 +240,9 @@ export interface NexusGenArgTypes {
     }
     updatePoint: { // args
       data: NexusGenInputs['UpdatePointInput']; // UpdatePointInput!
+    }
+    updatePointBatch: { // args
+      data: NexusGenInputs['UpdatePointInput'][]; // [UpdatePointInput!]!
     }
   }
   Query: {

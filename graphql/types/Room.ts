@@ -1,7 +1,6 @@
 import { extendType, inputObjectType, nonNull, objectType, stringArg } from 'nexus'
 import calc from '../../lib/calc'
 import { Gifter, CreateGifterInput } from './Gifter'
-import { Point } from './Point'
 
 export const GifterOnRoom = objectType({
   name: 'GifterOnRoom',

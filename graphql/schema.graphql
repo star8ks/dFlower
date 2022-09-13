@@ -42,6 +42,7 @@ type GifterOnRoom {
 type Mutation {
   createRoomFromDiscord(data: CreateRoomFromDiscord!): Room!
   updatePoint(data: UpdatePointInput!): Point!
+  updatePointBatch(data: [UpdatePointInput!]!): GiftedResult!
 }
 
 type PercentResult {

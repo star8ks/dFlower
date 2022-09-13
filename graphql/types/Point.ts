@@ -1,6 +1,8 @@
-import { InferGetServerSidePropsType } from 'next'
-import { extendType, inputObjectType, nonNull, objectType } from 'nexus'
-import { Gifter, CreateGifterInput } from './Gifter'
+import { extendType, inputObjectType, list, nonNull, objectType } from 'nexus'
+import { NexusGenObjects } from '../..'
+import { normalizedBySender } from '../../lib/calc'
+import { Gifter } from './Gifter'
+import { GiftedResult, receiverPercent } from './Result'
 
 export const Point = objectType({
   name: 'Point',
@@ -116,6 +118,109 @@ export const UpdatePointMutation = extendType({
             point
           }
         })
+      }
+
+    })
+  }
+})
+
+export const UpdatePointBatchMutation = extendType({
+  type: 'Mutation',
+  definition(t) {
+    t.nonNull.field('updatePointBatch', {
+      type: GiftedResult,
+      args: {
+        data: nonNull(list(nonNull(UpdatePointInput)))
+      },
+      async resolve(_parent, args, ctx) {
+        const { roomId, senderId } = args.data[0]
+
+        const allowedGifter = await ctx.prisma.giftersOnRooms.findMany({
+          where: {
+            roomId,
+          },
+          select: {
+            gifterId: true,
+            gifter: {
+              select: {
+                name: true
+              }
+            }
+          }
+        })
+        const allowedGifterIds = allowedGifter.map(gifter => gifter.gifterId)
+        const senderName = allowedGifter.find(gifter => gifter.gifterId === senderId)?.gifter.name
+
+        for (const data of args.data) {
+          if (!allowedGifterIds.includes(data.senderId) || !allowedGifterIds.includes(data.receiverId)) {
+            throw new Error('Sender or receiver are not in room.')
+          }
+          if (data.roomId !== roomId) {
+            throw new Error('RoomId is not same.')
+          }
+          if (data.senderId !== senderId) {
+            throw new Error('SenderId is not same.')
+          }
+        }
+
+        const res = await ctx.prisma.$transaction(args.data.map(data => {
+          const { roomId, senderId, receiverId, point } = data
+          return ctx.prisma.point.upsert({
+            where: {
+              roomId_senderId_receiverId: {
+                roomId,
+                senderId,
+                receiverId
+              }
+            },
+            update: {
+              point
+            },
+            create: {
+              roomId,
+              senderId,
+              receiverId,
+              point
+            }
+          })
+        }))
+        console.log(res)
+
+
+        const points = await ctx.prisma.point.findMany({
+          where: {
+            roomId,
+            senderId
+          },
+          include: {
+            sender: {
+              select: {
+                name: true,
+              }
+            },
+            receiver: {
+              select: {
+                name: true,
+              }
+            }
+          }
+        })
+        const sentSum = points.reduce((acc, cur) => acc + cur.point, 0)
+
+        const normalized: NexusGenObjects['receiverPercent'][] = []
+        normalizedBySender(points, sentSum, (point, percent) => {
+          normalized.push({
+            receiverId: point.receiverId,
+            receiverName: point.receiver.name,
+            percent,
+          })
+        })
+
+        return {
+          senderId,
+          senderName,
+          normalized
+        }
       }
 
     })

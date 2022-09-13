@@ -6,8 +6,7 @@
   "scripts": {
     "dev": "next",
     "build": "next build",
-    "start": "next start",
-    "api": "ts-node api.ts"
+    "start": "next start"
   },
   "dependencies": {
     "@apollo/client": "^3.6.9",
