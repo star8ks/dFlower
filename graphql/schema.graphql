@@ -16,6 +16,7 @@ input CreateGifterInput {
 input CreateRoomFromDiscord {
   discordId: String!
   discordName: String!
+  durationMinutes: Int!
   gifters: [CreateGifterInput!]!
   name: String
 }

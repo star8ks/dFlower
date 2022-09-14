@@ -22,6 +22,7 @@ export interface NexusGenInputs {
   CreateRoomFromDiscord: { // input type
     discordId: string; // String!
     discordName: string; // String!
+    durationMinutes: number; // Int!
     gifters: NexusGenInputs['CreateGifterInput'][]; // [CreateGifterInput!]!
     name?: string | null; // String
   }

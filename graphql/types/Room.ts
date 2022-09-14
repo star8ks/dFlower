@@ -126,6 +126,7 @@ export const CreateRoomFromDiscordInput = inputObjectType({
     t.nullable.string('name')
     t.nonNull.string('discordId')
     t.nonNull.string('discordName')
+    t.nonNull.int('durationMinutes')
     t.nonNull.list.field('gifters', {
       type: nonNull(CreateGifterInput),
     })
@@ -142,7 +143,7 @@ export const CreateRoomFromDiscordMutation = extendType({
       },
 
       async resolve(_parent, args, ctx) {
-        const { discordId, discordName, gifters, name: roomName } = args.data
+        const { discordId, discordName, gifters, name: roomName, durationMinutes } = args.data
 
         if (gifters.length < 3) {
           throw new Error('Not enough gifters')
@@ -170,7 +171,7 @@ export const CreateRoomFromDiscordMutation = extendType({
             name: roomName || `room created by ${discordName}`,
             createdAt: new Date(Date.now()),
             // ended at 30 mins later by default
-            endedAt: new Date(Date.now() + 0.5 * 60 * 60 * 1000),
+            endedAt: new Date(Date.now() + durationMinutes * 60 * 1000),
             creator: {
               connectOrCreate: {
                 where: { discordId: discordId },
