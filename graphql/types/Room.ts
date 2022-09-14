@@ -84,7 +84,6 @@ export const Room = objectType({
           accept: g.accept
         }))
 
-        console.log(calc(gifterOnRoom, points))
         return calc(gifterOnRoom, points)
       }
     })

@@ -156,6 +156,7 @@ export default function calc(gifterOnRoom: InputGifter[], points: InputPoint[]):
     })
   }
 
+  console.group('calc result', allGifted, result)
   return {
     allGifted,
     result,
