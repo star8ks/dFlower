@@ -94,6 +94,7 @@ input UpdatePointInput {
 
 type receiverPercent {
   percent: Float!
+  receiverDiscordId: String!
   receiverId: Int!
   receiverName: String!
 }

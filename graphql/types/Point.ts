@@ -208,6 +208,7 @@ export const UpdatePointBatchMutation = extendType({
 
         const gifterOnRoom = (await giftersOnRoom(roomId)).map(g => ({
           gifterId: g.gifterId,
+          gifterDiscordId: g.gifter.discordId,
           gifterName: g.gifter.name,
           accept: g.accept
         }))

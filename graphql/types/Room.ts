@@ -79,6 +79,7 @@ export const Room = objectType({
 
         const gifterOnRoom = (await giftersOnRoom(parent.id)).map(g => ({
           gifterId: g.gifterId,
+          gifterDiscordId: g.gifter.discordId,
           gifterName: g.gifter.name,
           accept: g.accept
         }))

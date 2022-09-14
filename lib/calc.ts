@@ -5,7 +5,8 @@ type PercentResult = NexusGenRootTypes['PercentResult']
 type ReceiverIdToPercentResults = {
   [receiverId: number]: {
     received: PercentResult[]
-    receiverName: string
+    receiverName: string,
+    receiverDiscordId: string
   }
 }
 
@@ -17,6 +18,7 @@ type CalcResult = NexusGenRootTypes['CalcResult']
 type InputGifter = {
   accept: boolean;
   gifterId: number;
+  gifterDiscordId: string;
   gifterName: string;
 }
 type InputPoint = Point & {
@@ -25,6 +27,7 @@ type InputPoint = Point & {
   },
   receiver: {
     name: string;
+    discordId: string;
   }
 }
 
@@ -72,6 +75,7 @@ export function normalize(gifterOnRoom: InputGifter[], points: InputPoint[]): No
         percentTotal += percent ? percent : 0
         if (percentReceived[point.receiverId] === undefined) {
           percentReceived[point.receiverId] = {
+            receiverDiscordId: point.receiver.discordId,
             receiverName: point.receiver.name,
             received: []
           }
@@ -85,6 +89,7 @@ export function normalize(gifterOnRoom: InputGifter[], points: InputPoint[]): No
 
         gifted.normalized.push({
           receiverId: point.receiverId,
+          receiverDiscordId: point.receiver.discordId,
           receiverName: point.receiver.name,
           percent
         })
@@ -103,6 +108,7 @@ export function normalize(gifterOnRoom: InputGifter[], points: InputPoint[]): No
 
           if (percentReceived[receiver.gifterId] === undefined) {
             percentReceived[receiver.gifterId] = {
+              receiverDiscordId: receiver.gifterDiscordId,
               receiverName: receiver.gifterName,
               received: []
             }
@@ -116,6 +122,7 @@ export function normalize(gifterOnRoom: InputGifter[], points: InputPoint[]): No
 
           gifted.normalized.push({
             receiverId: receiver.gifterId,
+            receiverDiscordId: receiver.gifterDiscordId,
             receiverName: receiver.gifterName,
             percent
           })
@@ -143,6 +150,7 @@ export default function calc(gifterOnRoom: InputGifter[], points: InputPoint[]):
     const percentSum = percentReceived[receiverId].received.reduce((acc, cur) => acc + cur.percent, 0)
     result.push({
       receiverId: parseInt(receiverId),
+      receiverDiscordId: percentReceived[receiverId].receiverDiscordId,
       receiverName: percentReceived[receiverId].receiverName,
       percent: percentTotal ? percentSum / percentTotal : 0
     })

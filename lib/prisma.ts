@@ -17,6 +17,7 @@ export default prisma
 
 export async function giftersOnRoom(roomId: string, gifterSelect = {
   name: true,
+  discordId: true
 }) {
   return await prisma.giftersOnRooms.findMany({
     where: {
@@ -46,6 +47,7 @@ export async function pointsWithGifters(roomId: string, senderId?: number) {
       receiver: {
         select: {
           name: true,
+          discordId: true
         }
       }
     }

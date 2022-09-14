@@ -14,6 +14,7 @@ export const receiverPercent = objectType({
   name: 'receiverPercent',
   definition(t) {
     t.nonNull.int('receiverId')
+    t.nonNull.string('receiverDiscordId')
     t.nonNull.string('receiverName')
     t.nonNull.float('percent')
   }

@@ -92,6 +92,7 @@ export interface NexusGenObjects {
   }
   receiverPercent: { // root type
     percent: number; // Float!
+    receiverDiscordId: string; // String!
     receiverId: number; // Int!
     receiverName: string; // String!
   }
@@ -165,6 +166,7 @@ export interface NexusGenFieldTypes {
   }
   receiverPercent: { // field return type
     percent: number; // Float!
+    receiverDiscordId: string; // String!
     receiverId: number; // Int!
     receiverName: string; // String!
   }
@@ -228,6 +230,7 @@ export interface NexusGenFieldTypeNames {
   }
   receiverPercent: { // field return type name
     percent: 'Float'
+    receiverDiscordId: 'String'
     receiverId: 'Int'
     receiverName: 'String'
   }
