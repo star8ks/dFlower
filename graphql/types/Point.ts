@@ -135,6 +135,24 @@ export const UpdatePointBatchMutation = extendType({
       async resolve(_parent, args, ctx) {
         const { roomId, senderId } = args.data[0]
 
+        const room = await ctx.prisma.room.findFirst({
+          where: {
+            id: roomId,
+            endedAt: {
+              gte: new Date()
+            }
+          },
+          select: {
+            endedAt: true
+          }
+        })
+        // if room ended now, throw error
+        if (!room) {
+          console.log('Room is ended or not existed.')
+          throw new Error('Room is ended or not existed.')
+        }
+
+
         const allowedGifter = await ctx.prisma.giftersOnRooms.findMany({
           where: {
             roomId,

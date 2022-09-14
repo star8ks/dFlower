@@ -24,7 +24,7 @@ export const Room = objectType({
 
     t.field('creator', {
       type: Gifter,
-      async resolve(parent, args, ctx) {
+      async resolve(parent, _args, ctx) {
         return await ctx.prisma.room.findUniqueOrThrow({
           where: {
             id: parent.id
@@ -35,7 +35,7 @@ export const Room = objectType({
 
     t.nonNull.list.field('gifters', {
       type: 'GifterOnRoom',
-      async resolve(parent, args, ctx) {
+      async resolve(parent, _args, ctx) {
         const gifterIds = await ctx.prisma.giftersOnRooms.findMany({
           where: {
             roomId: parent.id
@@ -74,7 +74,7 @@ export const Room = objectType({
 
     t.field('tempResult', {
       type: 'CalcResult',
-      async resolve(parent, _args, ctx) {
+      async resolve(parent, _args, _ctx) {
         const points = await pointsWithGifters(parent.id)
 
         const gifterOnRoom = (await giftersOnRoom(parent.id)).map(g => ({
@@ -168,8 +168,8 @@ export const CreateRoomFromDiscordMutation = extendType({
           data: {
             name: roomName || `room created by ${discordName}`,
             createdAt: new Date(Date.now()),
-            // ended at 2 hours later by default
-            endedAt: new Date(Date.now() + 2 * 60 * 60 * 1000),
+            // ended at 30 mins later by default
+            endedAt: new Date(Date.now() + 0.5 * 60 * 60 * 1000),
             creator: {
               connectOrCreate: {
                 where: { discordId: discordId },
