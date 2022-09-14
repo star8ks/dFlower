@@ -1,5 +1,6 @@
 import { extendType, inputObjectType, nonNull, objectType, stringArg } from 'nexus'
 import calc from '../../lib/calc'
+import { giftersOnRoom, pointsWithGifters } from '../../lib/prisma'
 import { Gifter, CreateGifterInput } from './Gifter'
 
 export const GifterOnRoom = objectType({
@@ -74,35 +75,9 @@ export const Room = objectType({
     t.field('tempResult', {
       type: 'CalcResult',
       async resolve(parent, _args, ctx) {
-        const points = await ctx.prisma.point.findMany({
-          where: {
-            roomId: parent.id
-          },
-          include: {
-            sender: {
-              select: {
-                name: true,
-              }
-            },
-            receiver: {
-              select: {
-                name: true,
-              }
-            }
-          }
-        })
-        const gifterOnRoom = (await ctx.prisma.giftersOnRooms.findMany({
-          where: {
-            roomId: parent.id
-          },
-          include: {
-            gifter: {
-              select: {
-                name: true,
-              }
-            },
-          }
-        })).map(g => ({
+        const points = await pointsWithGifters(parent.id)
+
+        const gifterOnRoom = (await giftersOnRoom(parent.id)).map(g => ({
           gifterId: g.gifterId,
           gifterName: g.gifter.name,
           accept: g.accept

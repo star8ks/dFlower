@@ -1,8 +1,8 @@
 import { extendType, inputObjectType, list, nonNull, objectType } from 'nexus'
-import { NexusGenObjects } from '../..'
-import { normalizedBySender } from '../../lib/calc'
+import { normalize } from '../../lib/calc'
+import { giftersOnRoom, pointsWithGifters } from '../../lib/prisma'
 import { Gifter } from './Gifter'
-import { GiftedResult, receiverPercent } from './Result'
+import { GiftedResult } from './Result'
 
 export const Point = objectType({
   name: 'Point',
@@ -149,7 +149,6 @@ export const UpdatePointBatchMutation = extendType({
           }
         })
         const allowedGifterIds = allowedGifter.map(gifter => gifter.gifterId)
-        const senderName = allowedGifter.find(gifter => gifter.gifterId === senderId)?.gifter.name
 
         for (const data of args.data) {
           if (!allowedGifterIds.includes(data.senderId) || !allowedGifterIds.includes(data.receiverId)) {
@@ -184,43 +183,20 @@ export const UpdatePointBatchMutation = extendType({
             }
           })
         }))
-        console.log(res)
+        console.log('points updated:', res)
 
+        const points = await pointsWithGifters(roomId, senderId)
+        console.log('points retrived:', points)
 
-        const points = await ctx.prisma.point.findMany({
-          where: {
-            roomId,
-            senderId
-          },
-          include: {
-            sender: {
-              select: {
-                name: true,
-              }
-            },
-            receiver: {
-              select: {
-                name: true,
-              }
-            }
-          }
-        })
-        const sentSum = points.reduce((acc, cur) => acc + cur.point, 0)
+        const gifterOnRoom = (await giftersOnRoom(roomId)).map(g => ({
+          gifterId: g.gifterId,
+          gifterName: g.gifter.name,
+          accept: g.accept
+        }))
+        const normalized = normalize(gifterOnRoom, points)
+        console.log('normalized:', normalized)
 
-        const normalized: NexusGenObjects['receiverPercent'][] = []
-        normalizedBySender(points, sentSum, (point, percent) => {
-          normalized.push({
-            receiverId: point.receiverId,
-            receiverName: point.receiver.name,
-            percent,
-          })
-        })
-
-        return {
-          senderId,
-          senderName,
-          normalized
-        }
+        return normalized.allGifted[0]
       }
 
     })

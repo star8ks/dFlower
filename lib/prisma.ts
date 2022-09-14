@@ -14,3 +14,40 @@ if (process.env.NODE_ENV === 'poduction') {
 }
 
 export default prisma
+
+export async function giftersOnRoom(roomId: string, gifterSelect = {
+  name: true,
+}) {
+  return await prisma.giftersOnRooms.findMany({
+    where: {
+      roomId
+    },
+    include: {
+      gifter: {
+        select: gifterSelect
+      },
+    }
+  })
+}
+
+export async function pointsWithGifters(roomId: string, senderId?: number) {
+  const where = {
+    roomId,
+    senderId: senderId ? senderId : undefined
+  }
+  return await prisma.point.findMany({
+    where,
+    include: {
+      sender: {
+        select: {
+          name: true,
+        }
+      },
+      receiver: {
+        select: {
+          name: true,
+        }
+      }
+    }
+  })
+}

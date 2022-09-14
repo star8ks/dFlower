@@ -6,7 +6,6 @@ type ReceiverIdToPercentResults = {
   [receiverId: number]: {
     received: PercentResult[]
     receiverName: string
-    result: number
   }
 }
 
@@ -60,7 +59,10 @@ export function normalize(gifterOnRoom: InputGifter[], points: InputPoint[]): No
       normalized: []
     }
 
-    const sentPoints = points.filter(point => point.senderId === sender.gifterId && !rejectorIds.includes(point.receiverId)
+    const sentPoints = points.filter(point =>
+      point.senderId === sender.gifterId
+      && point.receiverId !== sender.gifterId
+      && !rejectorIds.includes(point.receiverId)
     )
     const sentSum = sentPoints.reduce((acc, cur) => acc + cur.point, 0)
 
@@ -71,8 +73,7 @@ export function normalize(gifterOnRoom: InputGifter[], points: InputPoint[]): No
         if (percentReceived[point.receiverId] === undefined) {
           percentReceived[point.receiverId] = {
             receiverName: point.receiver.name,
-            received: [],
-            result: 0
+            received: []
           }
         }
 
@@ -103,8 +104,7 @@ export function normalize(gifterOnRoom: InputGifter[], points: InputPoint[]): No
           if (percentReceived[receiver.gifterId] === undefined) {
             percentReceived[receiver.gifterId] = {
               receiverName: receiver.gifterName,
-              received: [],
-              result: 0
+              received: []
             }
           }
 
@@ -141,11 +141,10 @@ export default function calc(gifterOnRoom: InputGifter[], points: InputPoint[]):
   const result: receiverPercent[] = []
   for (const receiverId in percentReceived) {
     const percentSum = percentReceived[receiverId].received.reduce((acc, cur) => acc + cur.percent, 0)
-    percentReceived[receiverId].result = percentTotal ? percentSum / percentTotal : 0
     result.push({
       receiverId: parseInt(receiverId),
       receiverName: percentReceived[receiverId].receiverName,
-      percent: percentReceived[receiverId].result
+      percent: percentTotal ? percentSum / percentTotal : 0
     })
   }
 
