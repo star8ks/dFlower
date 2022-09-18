@@ -215,7 +215,7 @@ export const UpdatePointBatchMutation = extendType({
         const normalized = normalize(gifterOnRoom, points)
         console.log('normalized:', normalized)
 
-        return normalized.allGifted[0]
+        return normalized.allGifted.find(g => g.senderId === senderId)
       }
 
     })
