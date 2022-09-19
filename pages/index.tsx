@@ -12,7 +12,7 @@ const AllRoomsQuery = gql`
   }
 `
 
-function Index() {
+function Index(): React.ReactElement {
   const [btnColor, setBtnColor] = useState('rgb(207, 20, 114)')
   const [hover, setHover] = useState(false)
   const [siteName, setSiteName] = useState<string | JSX.Element>('dFlower')

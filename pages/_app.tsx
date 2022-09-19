@@ -1,28 +1,29 @@
-import '../styles/App.css'
+import '@/styles/App.css'
+import { AppProps } from 'next/app'
 import Layout from '../components/Layout'
 import Snd from 'snd-lib'
-import React from 'react'
+import React, { useEffect } from 'react'
 import { ApolloProvider } from '@apollo/client'
 import apolloClient from '../lib/apollo'
 
+function App({ Component, pageProps }: AppProps) {
+  useEffect(function mount() {
+    const snd = new Snd()
+    snd.load(Snd.KITS.SND01)
 
-const snd = new Snd()
-snd.load(Snd.KITS.SND01)
+    function play() {
+      snd.play(Snd.SOUNDS.TAP)
+    }
 
-snd.load(Snd.KITS.SND01).then(() => {
-  // Listen click event of all anchor elements.
-  // for (let i=0; i<links.length; i++) {
-  // 	links[i].addEventListener('click', onClick)
-  // }
-  document.body.addEventListener('click', () => snd.play(Snd.SOUNDS.TAP))
-})
+    snd.load(Snd.KITS.SND01).then(() => {
+      window.addEventListener('click', play)
+    })
 
-// interface Props {
-//   Component: React.ComponentType
-//   pageProps: React.ComponentProps<any>
-// }
+    return function unMount() {
+      window.removeEventListener('click', play)
+    }
+  }, [])
 
-function App({ Component, pageProps }) {
   return (
     <ApolloProvider client={apolloClient}>
       <Layout>

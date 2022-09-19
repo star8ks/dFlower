@@ -112,7 +112,13 @@ export const RoomsQuery = extendType({
       type: Room,
       resolve(_parent, _args, ctx) {
         // TODO pagination
-        return ctx.prisma.room.findMany()
+        return ctx.prisma.room.findMany({
+          orderBy: {
+            createdAt: 'desc'
+          },
+          skip: 0,
+          take: 10
+        })
       }
     })
   },

@@ -19,10 +19,17 @@
     "isolatedModules": true,
     "noEmit": true,
     "jsx": "preserve",
-    "incremental": true
+    "incremental": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": [
+        "./*"
+      ],
+    },
   },
   "include": [
-    "src"
+    "**/*.ts",
+    "**/*.tsx"
   ],
   "references": [
     {
