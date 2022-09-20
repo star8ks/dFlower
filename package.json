@@ -12,6 +12,7 @@
     "@apollo/client": "^3.6.9",
     "@prisma/client": "^4.0.0",
     "apollo-server-micro": "^3.10.2",
+    "graphql": "^16.6.0",
     "graphql-tools": "^8.3.4",
     "micro-cors": "^0.1.1",
     "next": "^12.2.5",
