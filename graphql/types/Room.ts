@@ -156,6 +156,13 @@ export const CreateRoomFromDiscordMutation = extendType({
         if (gifters.length > 5) {
           throw new Error('Too many gifters')
         }
+        const discordIds: string[] = []
+        for (const gifter of gifters) {
+          if (discordIds.includes(gifter.discordId)) {
+            throw new Error('repeated discord id')
+          }
+          discordIds.push(gifter.discordId)
+        }
         const gifterIds = await Promise.all(gifters.map(async gifter => {
           // if (!gifter) return
           const gifterOnRoom = await ctx.prisma.gifter.upsert({
