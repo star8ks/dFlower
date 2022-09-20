@@ -25,3 +25,4 @@ dist-ssr
 discord/.env
 .env*
 .next
+.vercel
