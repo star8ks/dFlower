@@ -153,7 +153,7 @@ export const CreateRoomFromDiscordMutation = extendType({
         if (gifters.length < 3) {
           throw new Error('Not enough gifters')
         }
-        if (gifters.length > 5) {
+        if (gifters.length > 6) {
           throw new Error('Too many gifters')
         }
         const discordIds: string[] = []
