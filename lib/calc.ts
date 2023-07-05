@@ -47,8 +47,11 @@ type Normalized = {
   percentTotal: number;
   allGifted: Gifted[]
 }
-export function normalize(gifterOnRoom: InputGifter[], points: InputPoint[]): Normalized {
-  const rejectorIds = gifterOnRoom.filter((gor) => !gor.accept).map((gor) => gor.gifterId)
+export function normalize(gifterOnRoom: InputGifter[], points: InputPoint[], excludeIds: number[] = []): Normalized {
+  const rejectorIds = gifterOnRoom
+    .filter((gor) => !gor.accept)
+    .map((gor) => gor.gifterId)
+    .concat(excludeIds)
 
   const allGifted: Gifted[] = []
   // save percent to percentReceived, to calculate the sum of percent of each receiver later
@@ -142,8 +145,21 @@ export function normalize(gifterOnRoom: InputGifter[], points: InputPoint[]): No
 }
 
 export default function calc(gifterOnRoom: InputGifter[], points: InputPoint[]): CalcResult {
+  const senderIds = points.reduce<number[]>(function (ids, point) {
+    if (!ids.includes(point.senderId)) {
+      ids.push(point.senderId)
+    }
+    return ids
+  }, [] as number[])
 
-  const { percentReceived, percentTotal, allGifted } = normalize(gifterOnRoom, points)
+  // exclude gifter who send nothing to others
+  const excludeIds = gifterOnRoom.filter(gifter => {
+    return !senderIds.includes(gifter.gifterId)
+  }).map(gifter => gifter.gifterId)
+
+  const { percentReceived, percentTotal, allGifted } = normalize(gifterOnRoom, points, excludeIds)
+
+  console.log('percentReceived', JSON.stringify(percentReceived))
 
   const result: receiverPercent[] = []
   for (const receiverId in percentReceived) {
