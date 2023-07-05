@@ -169,7 +169,9 @@ export const CreateRoomFromDiscordMutation = extendType({
             where: {
               discordId: gifter.discordId
             },
-            update: {},
+            update: {
+              name: gifter.name
+            },
             create: {
               name: gifter.name,
               discordId: gifter.discordId
