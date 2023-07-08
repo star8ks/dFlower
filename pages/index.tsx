@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react'
 import { gql, useQuery } from '@apollo/client'
 import Link from 'next/link'
+import { NexusGenFieldTypes } from '..'
 
 const AllRoomsQuery = gql`
   query AllRoomsQuery {
@@ -10,15 +11,24 @@ const AllRoomsQuery = gql`
       name
       endedAt
       createdAt
+
+      tempResult {
+        result {
+          receiverId
+          percent
+        }
+      }
     }
   }
 `
 
-function Index(): React.ReactElement {
+function Index() {
   const [btnColor, setBtnColor] = useState('rgb(207, 20, 114)')
   const [hover, setHover] = useState(false)
   const [siteName, setSiteName] = useState<string | JSX.Element>('dFlower')
-  const { data, error, loading } = useQuery<{rooms: {id: string, name: string, endedAt: string, createdAt: string}[]}>(AllRoomsQuery)
+  const { data, error, loading } = useQuery<{
+    rooms: NexusGenFieldTypes['Room'][]
+  }>(AllRoomsQuery)
 
   useEffect(() => {
     if (!hover) return
@@ -59,9 +69,10 @@ function Index(): React.ReactElement {
         {data?.rooms && data.rooms.map(room => {
           if(parseInt(room.endedAt) > new Date().getTime()) return
 
+          if(!room.tempResult?.result.length) return
 
           const date = new Date(parseInt(room.createdAt))
-          console.log(room.createdAt, date)
+
           return <li key={room.id} className='p-0 mb-4'
             title={room.id}>
             <strong className='prose-strong'>{date.toLocaleDateString()}</strong>&nbsp;&nbsp;&nbsp;
