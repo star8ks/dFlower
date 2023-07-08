@@ -159,7 +159,7 @@ export default function calc(gifterOnRoom: InputGifter[], points: InputPoint[]):
 
   const { percentReceived, percentTotal, allGifted } = normalize(gifterOnRoom, points, excludeIds)
 
-  console.log('percentReceived', JSON.stringify(percentReceived))
+  // console.log('percentReceived', JSON.stringify(percentReceived))
 
   const result: receiverPercent[] = []
   for (const receiverId in percentReceived) {

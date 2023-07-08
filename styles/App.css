@@ -1,12 +1,11 @@
-body {
-  background-color: #b49dae;
-  background      : linear-gradient(13.43deg, #b49dae 50%, #c58d8b 100%);
-  color           : hsl(0, 0%, 100%);
-  min-height      : 100vh;
-}
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-p {
-  color: #fff;
+body {
+  /* background-color: #b49dae;
+  background      : linear-gradient(13.43deg, #b49dae 50%, #c58d8b 100%); */
+  min-height      : 100vh;
 }
 
 #root {

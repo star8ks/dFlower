@@ -8,7 +8,7 @@ export const GifterOnRoom = objectType({
   definition(t) {
     t.nonNull.boolean('accept')
     t.nonNull.field('gifter', {
-      type: 'Gifter'
+      type: Gifter
     })
   }
 })
