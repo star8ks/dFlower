@@ -113,6 +113,10 @@ export default function Result() {
     return <p> Oops, somthing went wrong. {error?.message}</p>
   }
 
+  if (parseInt(data.roomById.endedAt) > new Date().getTime()) {
+    return <p> This room is not ended yet.</p>
+  }
+
   const gifters = data.roomById.gifters
   const renderData = composeData(data.roomById.points, gifters)
   console.log('render', renderData)
