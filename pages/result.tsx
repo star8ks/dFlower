@@ -1,8 +1,12 @@
 import React, { useEffect, useState } from 'react'
 import { gql, useLazyQuery } from '@apollo/client'
 import { Table } from 'antd'
-import type { ColumnsType } from 'antd/es/table'
+import type { ColumnType, ColumnsType } from 'antd/es/table'
 import { NexusGenFieldTypes, NexusGenRootTypes } from '..'
+import { ChordDiagram } from '@/components/ui/ChordDiagram'
+
+// TODO generate N colors
+const colors = ['#202080', '#3fdd89', '#957244', '#d26223', '#e08214', '#7a7774']
 
 // query with param: id
 const ResultQuery = gql`
@@ -13,6 +17,13 @@ const ResultQuery = gql`
       createdAt
       endedAt
       tempResult {
+        allGifted{
+          senderId
+          normalized {
+            receiverId
+            percent
+          }
+        }
         result {
           receiverId
           receiverDiscordId
@@ -119,7 +130,7 @@ export default function Result() {
 
   const gifters = data.roomById.gifters
   const renderData = composeData(data.roomById.points, gifters)
-  console.log('render', renderData)
+  // console.log('render', renderData)
 
   const senderSums:PointSums = new Map()
   data.roomById.points.forEach((p) => {
@@ -132,7 +143,7 @@ export default function Result() {
 
   const renderPercentData = composeData(data.roomById.points, gifters, senderSums)
 
-  const childrenColumns = gifters.map((g) => {
+  const childrenColumns:ColumnsType<RenderData> = gifters.map((g) => {
     const index = gifters.findIndex((gi) => gi?.gifter.id === g?.gifter.id)
     return {
       title: g?.gifter.name,
@@ -172,15 +183,36 @@ export default function Result() {
     },
   ]
 
+  const chordData = {
+    data: gifters.map((g) => {
+      const normalized = data.roomById.tempResult?.allGifted.find((a) => a?.senderId === g?.gifter.id)?.normalized
+      return gifters.map((gg) => {
+        const index = normalized?.findIndex((n) => n?.receiverId === gg?.gifter.id)
+        return normalized && typeof index !== 'undefined' 
+          ? Math.round((normalized[index]?.percent || 0) * 10000) / 100
+          : 0
+      })
+    }),
+    names: gifters.map((g) => g?.gifter.name || ''),
+    colors
+  }
+  console.log('data', chordData.data)
+
   // show tables of each gifter and receiver
   return (
     <div>
       <h1 className='text-h'>Result of {data.roomById.name} <span className='prose prose-slate' >({roomId})</span></h1>
 
-      <Table className='mt-8' columns={columns}
-        dataSource={renderData} bordered size="middle"
+      <div className="flex justify-center items-center">
+        <ChordDiagram data={chordData.data} names={chordData.names}
+          colors={chordData.colors} width={600} height={600} />
+      </div>
+
+      <Table className='mt-8' columns={columnsNormalized}
+        dataSource={renderPercentData} bordered size="middle"
         pagination={false}
-        summary={_ => {
+        rowClassName={(record, index) => `bg-[${colors[index]}]`}
+        summary={() => {
           return (
             <>
               <Table.Summary.Row>
@@ -207,35 +239,41 @@ export default function Result() {
         }}
       ></Table>
 
-      <Table className='mt-8' columns={columnsNormalized}
-        dataSource={renderPercentData} bordered size="middle"
-        pagination={false}
-        summary={_ => {
-          return (
-            <>
-              <Table.Summary.Row>
-                <Table.Summary.Cell align='right' className='font-bold' index={0}>Share</Table.Summary.Cell>
-                {gifters.map((g) => {
-                  const index = gifters.findIndex((gi) => gi?.gifter.id === g?.gifter.id)
-                  const percent = data.roomById.tempResult?.result[index]?.percent
-                  if (!percent) {
-                    return (
-                      <Table.Summary.Cell align='right' className='font-bold' index={index} key={index}>
-                  0%
-                      </Table.Summary.Cell>
-                    )
-                  }
-                  return (
-                    <Table.Summary.Cell align='right' className='font-bold' index={index} key={index}>
-                      {(percent * 100).toFixed(2)}%
-                    </Table.Summary.Cell>
-                  )
-                })}
-              </Table.Summary.Row>
-            </>
-          )
-        }}
-      ></Table>
+
+      {PointTable(columns, renderData, gifters, data)}
     </div>
   )
 }
+
+function PointTable(columns: ColumnsType<RenderData>, renderData: RenderData[], gifters: ({ accept: boolean; gifter: { discordId: string; ethAddress?: string | null | undefined; id: number; name: string } } | null)[], data: { roomById: NexusGenFieldTypes['Room'] }) {
+  return <Table className='mt-8' columns={columns}
+    dataSource={renderData} bordered size="middle"
+    pagination={false}
+    summary={_ => {
+      return (
+        <>
+          <Table.Summary.Row>
+            <Table.Summary.Cell align='right' className='font-bold' index={0}>Share</Table.Summary.Cell>
+            {gifters.map((g) => {
+              const index = gifters.findIndex((gi) => gi?.gifter.id === g?.gifter.id)
+              const percent = data.roomById.tempResult?.result[index]?.percent
+              if (!percent) {
+                return (
+                  <Table.Summary.Cell align='right' className='font-bold' index={index} key={index}>
+                    0%
+                  </Table.Summary.Cell>
+                )
+              }
+              return (
+                <Table.Summary.Cell align='right' className='font-bold' index={index} key={index}>
+                  {(percent * 100).toFixed(2)}%
+                </Table.Summary.Cell>
+              )
+            })}
+          </Table.Summary.Row>
+        </>
+      )
+    } }
+  ></Table>
+}
+

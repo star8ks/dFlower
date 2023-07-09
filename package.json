@@ -14,6 +14,7 @@
     "antd": "^5.6.4",
     "apollo-server-micro": "^3.10.2",
     "clsx": "^1.2.1",
+    "d3": "^7.4",
     "graphql": "^16.7.1",
     "graphql-tools": "^8.3.4",
     "micro": "^9.4.1",
@@ -29,6 +30,7 @@
   },
   "devDependencies": {
     "@tailwindcss/typography": "^0.5.9",
+    "@types/d3": "^7.4.0",
     "@types/micro-cors": "^0.1.2",
     "@types/node": "^18.7.14",
     "@types/react": "^18.2.14",
