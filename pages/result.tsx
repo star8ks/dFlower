@@ -237,11 +237,9 @@ export default function Result() {
 
         onRow={(record) => {
           return {
-            onClick: () => {},
             onMouseEnter: (event) => {
               console.log('enter', event, event.target)
             },
-            onMouseLeave: (event) => {},
           }
         }}
         summary={() => {
