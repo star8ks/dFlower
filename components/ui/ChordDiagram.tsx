@@ -1,14 +1,15 @@
-import React, { useRef, useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import * as d3 from 'd3'
-import {select} from 'd3-selection'
-
+import { Pallatte } from '@/graphql/types'
 
 export type ChordData = {
-  data: number[][]; names: string[]; colors: string[];
-  width: number;
-  height: number;
+  data: number[][]
+  share: number[]
+  names: string[]
+  colors: Pallatte
+  width: number
+  height: number
 }
-
 
 function groupTicks(d, step) {
   const k = (d.endAngle - d.startAngle) / d.value
@@ -17,107 +18,191 @@ function groupTicks(d, step) {
   })
 }
 
-export const ChordDiagram: React.FC<ChordData> = ({ data, names, colors, width, height }) => {
-  const svgRef = useRef<SVGSVGElement>(null)
-  const tooltipRef = useRef<HTMLDivElement>(null)
-  const [tooltipText, setTooltipText] = useState('')
+export const ChordDiagram: React.FC<ChordData> = ({ data, share, names, colors, width, height }) => {
+  const [tooltipStyle, setTooltipStyle] = useState({
+    text: '',
+    x: 0,
+    y: 0,
+    opacity: 0
+  })
+  const [hoverRibbon, setHoverRibbon] = useState<number|null>(null)
+  const [hoverArc, setHoverArc] = useState<number|null>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
+  const [boundingRect, setBoundingRect] = useState<DOMRect>()
 
   useEffect(() => {
-    const svg = d3.select(svgRef.current)
-    const tooltip = d3.select(tooltipRef.current)
-    tooltip.append('div')
-      .style('opacity', 0)
-      .style('background-color', 'white')
-      .style('border', 'solid')
-      .style('border-width', '2px')
-      .style('border-radius', '5px')
-      .style('padding', '5px')
-
-    const mouseout = function() {
-      tooltip
-        .style('opacity', 0)
+    if(containerRef.current){
+      setBoundingRect(containerRef.current.getBoundingClientRect())
     }
 
-    const outerRadius = Math.min(width, height) * 0.5 - 30
-    const innerRadius = outerRadius - 20
-    const sum = d3.sum(data.flat())
-    const tickStep = d3.tickStep(0, sum, 100)
-    const tickStepMajor = d3.tickStep(0, sum, 20)
-    const formatValue = d3.formatPrefix(',.0', tickStep)
+    // set gradient
 
-    const chord = d3.chord()
-      .padAngle(20 / innerRadius)
-      .sortSubgroups(d3.descending)
+    // highlight color sync table cell
+    
+  }, [containerRef])
 
-    const arc = d3.arc()
-      .innerRadius(innerRadius)
-      .outerRadius(outerRadius)
+  const outerRadius = Math.min(width, height) * 0.5 - 30
+  const innerRadius = outerRadius - 20
+  const sum = d3.sum(data.flat())
+  // const tickStep = d3.tickStep(0, sum, 100)
+  const tickStepMajor = d3.tickStep(0, sum, 20)
 
-    const ribbon = d3.ribbon()
-      .radius(innerRadius)
+  const chord = d3.chord()
+    .padAngle(20 / innerRadius)
+    .sortSubgroups(d3.descending)
 
-    const chords = chord(data)
+  const arc = d3.arc()
+    .innerRadius(innerRadius)
+    .outerRadius(outerRadius + 26)
 
-    const group = svg.append('g')
-      .selectAll()
-      .data(chords.groups)
-      .join('g')
-      .attr('x', width/2)
-      .attr('y', height/2)
+  const ribbon = d3.ribbon()
+    .radius(innerRadius)
 
-    group.append('path')
-      .attr('fill', d => colors[d.index])
-      .attr('d', arc)
-      .append('title')
-      .text(d => `${d.value.toLocaleString('en-US')} ${names[d.index]}`)
+  const chords = chord(data.map((group, index) => {
+    return group.map((value) => {
+      return value * share[index]
+    })
+  }))
 
-    const groupTick = group.append('g')
-      .selectAll()
-      .data(d => groupTicks(d, tickStep))
-      .join('g')
-      .attr('transform', d => `rotate(${d.angle * 180 / Math.PI - 90}) translate(${outerRadius},0)`)
+  console.log('tooltip', tooltipStyle)
 
-    groupTick.append('line')
-      .attr('stroke', 'currentColor')
-      .attr('x2', 6)
+  return (
+    <div className='relative' ref={containerRef}>
+      <svg width={width - 150} height={height - 50} viewBox={`${-width / 2} ${-height / 2} ${width} ${height}`}
+        style={{
+          maxWidth: '100%', height: 'auto', font: '14px sans-serif'
+        }}>
 
-    groupTick
-      .filter(d => d.value % tickStepMajor === 0)
-      .append('text')
-      .attr('x', 8)
-      .attr('dy', '.35em')
-      .attr('transform', d => d.angle > Math.PI ? 'rotate(180) translate(-16)' : null)
-      .attr('text-anchor', d => d.angle > Math.PI ? 'end' : null)
-      .text(d => formatValue(d.value))
+        {chords.groups.map((groupData, i) => {
+          // console.log('groupData', groupData)
 
-    svg.append('g')
-      .attr('fill-opacity', 0.7)
-      .selectAll()
-      .data(chords)
-      .join('path')
-      .attr('d', ribbon)
-      .attr('fill', d => colors[d.target.index])
-      .attr('stroke', 'white')
-      .on('mouseover', function(e, d: d3.Chord) {
-        select(this)
-          .attr('stroke-width', 2)
-        tooltip.style('opacity', 1)
+          return <g key={i}>
+            {/* arc of each person */}
+            <path d={arc(groupData)}
+              className={'fill-' + colors[i].normal}
+              fillOpacity={0.7} 
+              onMouseEnter={() => {
+                setHoverArc(i)
+              }}
+              onMouseOut={() => {
+                setTooltipStyle({
+                  ...tooltipStyle,
+                  text: ''
+                })
+                setHoverArc(null)
+              }}
+              onMouseMove={e => {
+                if(!boundingRect || !containerRef.current) return
 
-        const {value, index} = d.source
-        const {index: targetIndex} = d.target
-        setTooltipText(`${value} ${names[index]} → ${names[targetIndex]}${index !== targetIndex ? `\n${d.target.value} ${names[targetIndex]} → ${names[index]}` : ''}`)
-        console.log({ source: index, target: targetIndex })
-      })
-      .on('mouseout', mouseout)
-  }
-  , [data, names, colors])
+                const {value, index} = groupData
+                const name = names[index]
+                const text = `${(share[index] * 100).toFixed(2)}% ${name}`
 
-  return (<>
-    <svg ref={svgRef} viewBox={`${-width/2} ${-height/2} ${width} ${height}`}
-      fill='none' xmlns='http://www.w3.org/2000/svg' style={{
-        maxWidth: '50vw', height: 'auto',
-      }} preserveAspectRatio="xMaxYMax meet" />
-    <div ref={tooltipRef}>{tooltipText}</div>
-  </>
+                console.log(e.clientX, text)
+                
+                setTooltipStyle({
+                  ...tooltipStyle,
+                  text,
+                  opacity: 1,
+                  x: e.clientX - boundingRect.left - containerRef.current.clientLeft + 12 + window.scrollX,
+                  y: e.clientY - boundingRect.top - containerRef.current.clientTop + window.scrollY,
+                })
+              }}
+            />
+          
+            {/* name of each person along side of arc */}
+            {groupTicks(groupData, 100).map((tick, j) => {
+              // console.log('inside tick', tick, j, groupData)
+              const arcWidth = groupData.endAngle - groupData.startAngle
+              const namePosition = tick.angle + arcWidth / 2
+              // console.log('arc width', arcWidth)
+
+              const transform = (namePosition > Math.PI / 2 && namePosition < Math.PI * 3 / 2)
+                ? 'rotate(-90) translate(0, 14)' 
+                : namePosition > Math.PI * 3 / 2 
+                  ? 'rotate(90) translate(-80, 0)' 
+                  : 'rotate(90) translate(0, 0)' 
+              return <g key={j} transform={`rotate(${tick.angle * 180 / Math.PI - 90 + arcWidth * 180 / (Math.PI*2)}) translate(${outerRadius}, 0)`}>
+
+                {tick.value % tickStepMajor === 0 && (
+                  <text x={0} transform={transform} textAnchor={tick.angle > Math.PI ? 'end' : undefined}>
+                    {names[groupData.index].replace(/#\d+$/, '')}
+                  </text>
+                )}
+              </g>
+            })}
+
+            {/* sacles */}
+            {/* {groupTicks(groupData, tickStep).map((tick, j) => (
+              <g key={j} transform={`rotate(${tick.angle * 180 / Math.PI - 90}) translate(${outerRadius},0)`}>
+                <line stroke="currentColor" x2={6} />
+                {tick.value % tickStepMajor === 0 && (
+                  <text x={8} dy=".35em" transform={tick.angle > Math.PI ? 'rotate(180) translate(-16)' : undefined} textAnchor={tick.angle > Math.PI ? 'end' : undefined}>
+                    {tick.value ? formatValue(tick.value) : ''}
+                  </text>
+                )}
+              </g>
+            ))} */}
+
+          </g>
+        })}
+
+        <g>
+          {chords.map((chordData, i) => {
+            const fillOpacity = (hoverRibbon === null) ? 0.7 
+              : hoverRibbon === i ? 1 : .2
+          
+            // percent from sender to receiver
+            return <path key={i} d={ribbon(chordData)} fillOpacity={fillOpacity}
+              className={'fill-' + colors[chordData.target.index].normal} 
+            
+              onMouseEnter={() => {
+                setHoverRibbon(i)
+              }}
+              onMouseOut={() => {
+                setTooltipStyle({
+                  ...tooltipStyle,
+                  text: ''
+                })
+                setHoverRibbon(null)
+              }}
+              onMouseMove={e => {
+                if(!boundingRect || !containerRef.current) return
+                const {value, index} = chordData.source
+                const {index: targetIndex} = chordData.target
+                const sourceName = names[index]
+                const targetName = names[targetIndex]
+                const text = `${(value / share[index]).toFixed(1)}% ${sourceName} → ${targetName}${
+                  index !== targetIndex 
+                    ? `\n${(chordData.target.value / share[targetIndex]).toFixed(1)}% ${targetName} → ${sourceName}` : ''
+                }`
+
+                setTooltipStyle({
+                  ...tooltipStyle,
+                  text,
+                  opacity: 1,
+                  x: e.clientX - boundingRect.left - containerRef.current.clientLeft + 12 + window.scrollX,
+                  y: e.clientY - boundingRect.top - containerRef.current.clientTop + window.scrollY,
+                })
+              }}
+
+              stroke={hoverRibbon === null ? 'white' : 'rgba(0,0,0,0)'}
+            />
+          })}
+        </g>
+
+      </svg>
+
+      <p style={{
+        left: tooltipStyle.x + 'px',
+        top: tooltipStyle.y + 'px',
+        opacity: tooltipStyle.text ? tooltipStyle.opacity : 0,
+        whiteSpace: 'pre',
+        zIndex: 111
+      }} className='bg-white absolute p-2 rounded-sm'>
+        {tooltipStyle.text}
+      </p>
+        
+    </div>
   )
 }

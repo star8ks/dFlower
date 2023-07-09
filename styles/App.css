@@ -52,3 +52,13 @@ body {
 .sitename {
   color: rgb(207, 20, 114);
 }
+
+.ant-table-tbody > tr:hover:not(.ant-table-expanded-row) > td {
+  background-color: initial!important;
+}
+/* .ant-table-body .ant-table-row-hover {
+  background: red;
+}
+.ant-table-body .ant-table-row-hover>td {
+  background: unset;
+} */

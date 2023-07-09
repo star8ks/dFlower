@@ -4,9 +4,24 @@ import { Table } from 'antd'
 import type { ColumnType, ColumnsType } from 'antd/es/table'
 import { NexusGenFieldTypes, NexusGenRootTypes } from '..'
 import { ChordDiagram } from '@/components/ui/ChordDiagram'
+import { Pallatte } from '@/graphql/types'
 
-// TODO generate N colors
-const colors = ['#202080', '#3fdd89', '#957244', '#d26223', '#e08214', '#7a7774']
+// generate N tailwind bg-color class name
+function pallatte(n: number) {
+  const colors = ['rose', 'yellow', 'green', 'purple', 'indigo', 'slate']
+
+  const palette = []
+  for(let i = 0; i < n; i++) {
+    const color = colors[i % colors.length]
+    palette.push({
+      normal: `${color}-100`,
+      highlight: `${color}-200`,
+    })
+  }
+
+  return palette
+}
+const colors:Pallatte = pallatte(6)
 
 // query with param: id
 const ResultQuery = gql`
@@ -175,6 +190,7 @@ export default function Result() {
       key: 'senderName',
       width: 20,
       fixed: 'left',
+      className: '!bg-inherit',
     },
     {
       title: 'Percent',
@@ -193,25 +209,41 @@ export default function Result() {
           : 0
       })
     }),
+    share: gifters.map(g => {
+      return data.roomById.tempResult?.result.find(res => res?.receiverId === g?.gifter.id)?.percent || 0
+    }),
     names: gifters.map((g) => g?.gifter.name || ''),
     colors
   }
-  console.log('data', chordData.data)
+  console.log('data', chordData.data, chordData.share)
 
   // show tables of each gifter and receiver
   return (
     <div>
-      <h1 className='text-h'>Result of {data.roomById.name} <span className='prose prose-slate' >({roomId})</span></h1>
+      <h1 className='text-lg my-8'>Result of {data.roomById.name} <span className='prose prose-slate' >({roomId})</span></h1>
 
-      <div className="flex justify-center items-center">
-        <ChordDiagram data={chordData.data} names={chordData.names}
-          colors={chordData.colors} width={600} height={600} />
+      <div className="flex justify-center items-center flex-col bg-white">
+        <ChordDiagram
+          data={chordData.data}
+          share={chordData.share}
+          names={chordData.names}
+          colors={chordData.colors} width={800} height={800} />
       </div>
 
       <Table className='mt-8' columns={columnsNormalized}
         dataSource={renderPercentData} bordered size="middle"
         pagination={false}
-        rowClassName={(record, index) => `bg-[${colors[index]}]`}
+        rowClassName={(record, index) => `bg-${colors[index].normal}`}
+
+        onRow={(record) => {
+          return {
+            onClick: () => {},
+            onMouseEnter: (event) => {
+              console.log('enter', event, event.target)
+            },
+            onMouseLeave: (event) => {},
+          }
+        }}
         summary={() => {
           return (
             <>
@@ -239,8 +271,8 @@ export default function Result() {
         }}
       ></Table>
 
-
-      {PointTable(columns, renderData, gifters, data)}
+      {/* TODO click row to show points, delete PointTable */}
+      {/* {PointTable(columns, renderData, gifters, data)} */}
     </div>
   )
 }
