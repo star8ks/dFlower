@@ -28,9 +28,9 @@ const colors:Pallatte = [{
   highlight: 'indigo-200',
   normalRGB: '#e0e7ff',
 }, {
-  normal: 'slate-100',
-  highlight: 'slate-200',
-  normalRGB: '#f1f5f9',
+  normal: 'cyan-100',
+  highlight: 'cyan-200',
+  normalRGB: '#cffafe',
 }]
 
 // query with param: id

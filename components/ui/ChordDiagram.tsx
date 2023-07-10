@@ -206,9 +206,9 @@ export const ChordDiagram: React.FC<ChordData> = ({ data, share, names, colors, 
                 const {index: targetIndex} = chordData.target
                 const sourceName = names[index]
                 const targetName = names[targetIndex]
-                const text = `${(value / share[index]).toFixed(1)}% ${sourceName} → ${targetName}${
+                const text = `${(value / share[index]).toFixed(2)}% ${sourceName} → ${targetName}${
                   index !== targetIndex 
-                    ? `\n${(chordData.target.value / share[targetIndex]).toFixed(1)}% ${targetName} → ${sourceName}` : ''
+                    ? `\n${(chordData.target.value / share[targetIndex]).toFixed(2)}% ${targetName} → ${sourceName}` : ''
                 }`
 
                 setTooltipStyle({
