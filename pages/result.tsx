@@ -1,27 +1,37 @@
 import React, { useEffect, useState } from 'react'
 import { gql, useLazyQuery } from '@apollo/client'
 import { Table } from 'antd'
-import type { ColumnType, ColumnsType } from 'antd/es/table'
+import type { ColumnsType } from 'antd/es/table'
 import { NexusGenFieldTypes, NexusGenRootTypes } from '..'
 import { ChordDiagram } from '@/components/ui/ChordDiagram'
 import { Pallatte } from '@/graphql/types'
 
-// generate N tailwind bg-color class name
-function pallatte(n: number) {
-  const colors = ['rose', 'yellow', 'green', 'purple', 'indigo', 'slate']
-
-  const palette = []
-  for(let i = 0; i < n; i++) {
-    const color = colors[i % colors.length]
-    palette.push({
-      normal: `${color}-100`,
-      highlight: `${color}-200`,
-    })
-  }
-
-  return palette
-}
-const colors:Pallatte = pallatte(6)
+// TODO generate N tailwind bg-color class name
+const colors:Pallatte = [{
+  normal: 'rose-100',
+  highlight: 'rose-200',
+  normalRGB: '#ffe4e6',
+}, {
+  normal: 'yellow-100',
+  highlight: 'yellow-200',
+  normalRGB: '#fef9c3',
+}, {
+  normal: 'green-100',
+  highlight: 'green-200',
+  normalRGB: '#dcfce7',
+}, {
+  normal: 'purple-100',
+  highlight: 'purple-200',
+  normalRGB: '#f3e8ff',
+}, {
+  normal: 'indigo-100',
+  highlight: 'indigo-200',
+  normalRGB: '#e0e7ff',
+}, {
+  normal: 'slate-100',
+  highlight: 'slate-200',
+  normalRGB: '#f1f5f9',
+}]
 
 // query with param: id
 const ResultQuery = gql`

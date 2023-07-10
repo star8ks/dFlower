@@ -5,5 +5,6 @@ export * from './Result'
 
 export type Pallatte = {
   normal: string
+  normalRGB: string
   highlight: string
 }[]

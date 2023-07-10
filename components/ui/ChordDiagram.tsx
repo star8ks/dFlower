@@ -18,6 +18,37 @@ function groupTicks(d, step) {
   })
 }
 
+interface GradientDefsProps {
+  chords: d3.Chords;
+  colors: {
+    normalRGB: string;
+  }[];
+  innerRadius: number;
+}
+function GradientDefs({ chords, colors, innerRadius }: GradientDefsProps) {
+  return (
+    <defs>
+      {chords.map((chord, i) => {
+        const id = `chord-ribbon-gradient-${chord.source.index}-${chord.target.index}`
+        const x1 = innerRadius * Math.cos((chord.source.endAngle - chord.source.startAngle) / 2 + chord.source.startAngle - Math.PI / 2)
+        const y1 = innerRadius * Math.sin((chord.source.endAngle - chord.source.startAngle) / 2 + chord.source.startAngle - Math.PI / 2)
+        const x2 = innerRadius * Math.cos((chord.target.endAngle - chord.target.startAngle) / 2 + chord.target.startAngle - Math.PI / 2)
+        const y2 = innerRadius * Math.sin((chord.target.endAngle - chord.target.startAngle) / 2 + chord.target.startAngle - Math.PI / 2)
+
+        const stopColor1 = colors[chord.target.index].normalRGB
+        const stopColor2 = colors[chord.source.index].normalRGB
+        
+        return (
+          <linearGradient id={id} gradientUnits="userSpaceOnUse" x1={x1} y1={y1} x2={x2} y2={y2} key={i}>
+            <stop offset="0%" stopColor={stopColor1} />
+            <stop offset="100%" stopColor={stopColor2} />
+          </linearGradient>
+        )
+      })}
+    </defs>
+  )
+}
+
 export const ChordDiagram: React.FC<ChordData> = ({ data, share, names, colors, width, height }) => {
   const [tooltipStyle, setTooltipStyle] = useState({
     text: '',
@@ -152,9 +183,12 @@ export const ChordDiagram: React.FC<ChordData> = ({ data, share, names, colors, 
             const fillOpacity = (hoverRibbon === null) ? 0.7 
               : hoverRibbon === i ? 1 : .2
           
+            const sourceIndex = chordData.source.index
+            const targetIndex = chordData.target.index
             // percent from sender to receiver
             return <path key={i} d={ribbon(chordData)} fillOpacity={fillOpacity}
-              className={'fill-' + colors[chordData.target.index].normal} 
+              // className={'fill-' + colors[chordData.target.index].normal} 
+              fill={`url(#chord-ribbon-gradient-${sourceIndex}-${targetIndex})`}
             
               onMouseEnter={() => {
                 setHoverRibbon(i)
@@ -190,6 +224,8 @@ export const ChordDiagram: React.FC<ChordData> = ({ data, share, names, colors, 
             />
           })}
         </g>
+
+        <GradientDefs chords={chords} colors={colors} innerRadius={innerRadius} />
 
       </svg>
 
