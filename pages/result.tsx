@@ -57,6 +57,7 @@ const ResultQuery = gql`
         }
       }
       points {
+        createdAt
         senderId
         receiverId
         point
@@ -84,6 +85,7 @@ type RenderData = {
   point3?: number
   point4?: number
   point5?: number
+  points: Point[]
 }
 
 type PointSums = Map<number, number>
@@ -107,9 +109,18 @@ function composeData(points: Array<NexusGenRootTypes['Point'] | null>, gifters: 
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         exist[`point${receiverIndex.toString()}`] = (senderPointSums && sum) ? (cur.point / sum * 100).toFixed(2) + '%' : cur.point
+        exist.points.push({
+          key: cur.receiverId + '-' + cur.senderId,
+          date: new Date(parseInt(cur.createdAt)).toLocaleString(),
+          sender: sender.gifter.name,
+          receiver: receiver.gifter.name,
+          point: cur.point,
+        })
         
         return acc
       }
+
+      console.log('createdAt', cur.createdAt)
 
       const senderIndex = gifters.findIndex((g) => g?.gifter.id === cur.senderId)
       acc.push({
@@ -119,12 +130,21 @@ function composeData(points: Array<NexusGenRootTypes['Point'] | null>, gifters: 
         receiverId: receiver.gifter.id,
         [`point${receiverIndex}`]: (senderPointSums && sum) ? (cur.point / sum * 100).toFixed(2) + '%' : cur.point,
         [`point${senderIndex}`]: 'N/A',
+        points: [{
+          key: cur.receiverId + '-' + cur.senderId,
+          date: new Date(parseInt(cur.createdAt)).toLocaleString(),
+          sender: sender.gifter.name,
+          receiver: receiver.gifter.name,
+          point: cur.point,
+        }],
       })
       return acc
     },
     [] as RenderData[]
   )
 }
+
+type Point = {key: string, date: string, sender: string, receiver: string, point: number}
 
 export default function Result() {
   const [roomId, setRoomId] = useState('')
@@ -154,7 +174,6 @@ export default function Result() {
   }
 
   const gifters = data.roomById.gifters
-  const renderData = composeData(data.roomById.points, gifters)
   // console.log('render', renderData)
 
   const senderSums:PointSums = new Map()
@@ -168,6 +187,7 @@ export default function Result() {
 
   const renderPercentData = composeData(data.roomById.points, gifters, senderSums)
 
+  
   const childrenColumns:ColumnsType<RenderData> = gifters.map((g) => {
     const index = gifters.findIndex((gi) => gi?.gifter.id === g?.gifter.id)
     return {
@@ -179,21 +199,8 @@ export default function Result() {
       // sorter: (a, b) => a['point'] - b['point'],
     }
   })
+  
   const columns: ColumnsType<RenderData> = [
-    {
-      title: 'Sender',
-      dataIndex: 'senderName',
-      key: 'senderName',
-      width: 20,
-      fixed: 'left',
-    },
-    {
-      title: 'Point',
-      children: childrenColumns,
-      // align: 'center',
-    },
-  ]
-  const columnsNormalized: ColumnsType<RenderData> = [
     {
       title: 'Sender',
       dataIndex: 'senderName',
@@ -240,10 +247,37 @@ export default function Result() {
           colors={chordData.colors} width={800} height={800} />
       </div>
 
-      <Table className='mt-8' columns={columnsNormalized}
+      <Table className='mt-8' columns={columns}
         dataSource={renderPercentData} bordered size="middle"
         pagination={false}
         rowClassName={(record, index) => `bg-${colors[index].normal}`}
+
+        
+        expandable={{
+          expandedRowRender: (record, index) => {
+            const columns = [{
+              title: 'Date',
+              dataIndex: 'date',
+              key: 'date',
+            }, {
+              title: 'Sender',
+              dataIndex: 'sender',
+              key: 'sender',
+            }, {
+              title: 'Receiver',
+              dataIndex: 'receiver',
+              key: 'receiver',
+            }, {
+              title: 'Point',
+              dataIndex: 'point',
+              key: 'point',
+            }]
+            
+            return <Table columns={columns} dataSource={record.points} pagination={false} />
+          },
+          defaultExpandedRowKeys: ['0']
+        }}
+
 
         onRow={(record) => {
           return {
@@ -279,41 +313,6 @@ export default function Result() {
         }}
       ></Table>
 
-      {/* TODO click row to show points, delete PointTable */}
-      {/* {PointTable(columns, renderData, gifters, data)} */}
     </div>
   )
 }
-
-function PointTable(columns: ColumnsType<RenderData>, renderData: RenderData[], gifters: ({ accept: boolean; gifter: { discordId: string; ethAddress?: string | null | undefined; id: number; name: string } } | null)[], data: { roomById: NexusGenFieldTypes['Room'] }) {
-  return <Table className='mt-8' columns={columns}
-    dataSource={renderData} bordered size="middle"
-    pagination={false}
-    summary={_ => {
-      return (
-        <>
-          <Table.Summary.Row>
-            <Table.Summary.Cell align='right' className='font-bold' index={0}>Share</Table.Summary.Cell>
-            {gifters.map((g) => {
-              const index = gifters.findIndex((gi) => gi?.gifter.id === g?.gifter.id)
-              const percent = data.roomById.tempResult?.result[index]?.percent
-              if (!percent) {
-                return (
-                  <Table.Summary.Cell align='right' className='font-bold' index={index} key={index}>
-                    0%
-                  </Table.Summary.Cell>
-                )
-              }
-              return (
-                <Table.Summary.Cell align='right' className='font-bold' index={index} key={index}>
-                  {(percent * 100).toFixed(2)}%
-                </Table.Summary.Cell>
-              )
-            })}
-          </Table.Summary.Row>
-        </>
-      )
-    } }
-  ></Table>
-}
-
