@@ -290,7 +290,7 @@ export default function Result() {
           return (
             <>
               <Table.Summary.Row>
-                <Table.Summary.Cell align='right' className='font-bold' index={0}>Share</Table.Summary.Cell>
+                <Table.Summary.Cell align='right' className='font-bold' index={0} colSpan={2}>Share</Table.Summary.Cell>
                 {gifters.map((g) => {
                   const index = gifters.findIndex((gi) => gi?.gifter.id === g?.gifter.id)
                   const percent = data.roomById.tempResult?.result[index]?.percent
